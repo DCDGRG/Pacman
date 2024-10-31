@@ -148,9 +148,47 @@ def breadthFirstSearch(problem: SearchProblem) -> List[Directions]:
 def uniformCostSearch(problem: SearchProblem) -> List[Directions]:
     """Search the node of least total cost first."""
     "*** YOUR CODE HERE ***"
-    
+
+    from util import PriorityQueue
+
+    #create an priorityQueue to store the state and path
+    pq = PriorityQueue()
+    # 存储已经访问过的状态，字典存储，键值对：节点和节点的最短路径
+    visited = {}
+
+    # 定义起始状态
+    startPosition = problem.getStartState()
+    startStepCost = 0
+
+    # 将起始状态压入队列,路径为空
+    pq.push((startPosition, []), startStepCost)  # (位置, 路径, 代价)
+    visited[startPosition] = 0;
+    #print(pq.pop())  # 查看返回值的结构  ('A', [])
+
+    # 开始搜索
+    while not pq.isEmpty():
+
+        currentNode = pq.pop()
+        position = currentNode[0]
+        path = currentNode[1]
+
+        if problem.isGoalState(position):
+            return path;
+
+        successors = problem.getSuccessors(position)
+
+        for successor, action, StepCost in successors:
+
+            newPath = path + [action]
+            g = problem.getCostOfActions(newPath)
+
+            if successor not in visited or g < visited[successor]:
+                visited[successor] = g
+                pq.push((successor, newPath), g)
+
 
     util.raiseNotDefined()
+
 
 def nullHeuristic(state, problem=None) -> float:
     """
@@ -213,8 +251,9 @@ def aStarSearch(problem: SearchProblem, heuristic=nullHeuristic) -> List[Directi
             f = g + h
 
             if successor not in visited or g< visited[successor]:
-                visited[successor] = g     # # 更新访问记录中的最小代价
+                visited[successor] = g     # 更新访问记录中的最小代价
                 pq.push((successor,newPath), f)
+
 
     util.raiseNotDefined()
 
