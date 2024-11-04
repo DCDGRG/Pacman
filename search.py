@@ -75,6 +75,7 @@ def tinyMazeSearch(problem: SearchProblem) -> List[Directions]:
     w = Directions.WEST
     return  [s, s, w, s, w, w, s, w]
 
+
 def depthFirstSearch(problem: SearchProblem) -> List[Directions]:
     """
     Search the deepest nodes in the search tree first.
@@ -85,64 +86,75 @@ def depthFirstSearch(problem: SearchProblem) -> List[Directions]:
     To get started, you might want to try some of these simple commands to
     understand the search problem that is being passed in:
 
-    print("Start:", problem.getStartState())
-    print("Is the start a goal?", problem.isGoalState(problem.getStartState()))
-    print("Start's successors:", problem.getSuccessors(problem.getStartState()))
     """
     "*** YOUR CODE HERE ***"
+    # print("Start:", problem.getStartState())
+    # print("Is the start a goal?", problem.isGoalState(problem.getStartState()))
+    # print("Start's successors:", problem.getSuccessors(problem.getStartState()))
+    startNode = problem.getStartState() # Get the starting state of the problem
+    # print(startNode)
+    # If the start state is already the goal, return an empty action list
+    if problem.isGoalState(startNode):
+        return []
 
+    # Initialize a stack for DFS, storing (node, actions) tuples
+    stack= util.Stack()
+    visited = []  # track visited nodes
+    stack.push((startNode, [])) # Push the startnode and an empty action
 
+    while not stack.isEmpty():
+        currentNode, actions = stack.pop() # Pop the current node and the actions
+        if currentNode not in visited:
+            # Mark the current node as visited
+            visited.append(currentNode)
+            # if the current node is the goal state
+            if problem.isGoalState(currentNode):
+                return actions
+
+            for nextNode, action, _ in problem.getSuccessors(currentNode):
+                newAction = actions + [action]
+                stack.push((nextNode, newAction))
     util.raiseNotDefined()
 
 
-#  """
-#       state: Search state
+def breadthFirstSearch(problem):
+    """Search the shallowest nodes in the search tree first using BFS."""
 
-#       对于给定的状态，该函数应返回一个包含多个三元组的列表，每个三元组包含：
-#       (successor, action, stepCost)
-#       - successor：后继状态（下一个状态）
-#       - action：从当前状态移动到后继状态所采取的动作
-#       - stepCost：从当前状态移动到后继状态的代价
-#  """
-def breadthFirstSearch(problem: SearchProblem) -> List[Directions]:
-    """Search the shallowest nodes in the search tree first."""
-    "*** YOUR CODE HERE ***"
-    from util import Queue
+    
+    # Initialize an empty Queue and an empty list for visited nodes
+    frontier = util.Queue()
+    visited = set()  # Use a set for faster lookups
 
-    #create an queue to store the state and path
-    queue = Queue()
-    # 存储已经访问过的状态
-    visited = set()
+    # Initialize the starting position and path
+    start_state = problem.getStartState()
+    frontier.push((start_state, [], 0))  # (state, path, cost)
 
-    # 定义起始状态
-    start_position = problem.getStartState()
+    def add_to_frontier(state, path, cost):
+        """Helper function to add a state to the frontier if not visited."""
+        if state not in visited:
+            frontier.push((state, path, cost))
 
-    # 将起始状态压入队列,路径为空
-    queue.push((start_position, [], 0))   # (位置, 路径, 代价)
+    while not frontier.isEmpty():
+        # Pop the front element from the queue
+        current_state, path, action_cost = frontier.pop()
 
-    # 开始搜索
-    while not queue.isEmpty():
+        # Check if we've reached the goal
+        if problem.isGoalState(current_state):
+            return path
 
-        currentNode = queue.pop()
-        position, path, stepCost = currentNode
+        # If the state hasn't been visited, process it
+        if current_state not in visited:
+            visited.add(current_state)  # Mark the state as visited
 
-        #如果当前状态是目标状态， 返回路径， 说明已经到达终点
-        if problem.isGoalState(position):
-            return path;
-        #如果该状态没有访问过，标记之后，进行扩展
-        if position not in visited:
-            visited.add(position)   #标记该状态为已访问
+            # Explore successors
+            for successor, action, step_cost in problem.getSuccessors(current_state):
+                new_path = path + [action]
+                add_to_frontier(successor, new_path, action_cost + step_cost)
 
-            # 获取当前节点的所有后继节点
-            successors = problem.getSuccessors(position)
-
-            # 获取该状态的所有后继状态，压入队列. problem.getSuccessors(state) 返回的是一个列表，其中每一项是一个三元组
-            for successor, action, stepCost in successors:
-                if successor not in visited:
-                    new_path = path + [action]
-                    queue.push((successor, new_path, stepCost))
-
+    # Raise an error if no solution is found
     util.raiseNotDefined()
+
+
 
 
 def uniformCostSearch(problem: SearchProblem) -> List[Directions]:
@@ -151,21 +163,16 @@ def uniformCostSearch(problem: SearchProblem) -> List[Directions]:
 
     from util import PriorityQueue
 
-    #create an priorityQueue to store the state and path
     pq = PriorityQueue()
-    # 存储已经访问过的状态，字典存储，键值对：节点和节点的最短路径
     visited = {}
-
-    # 定义起始状态
+ 
     startPosition = problem.getStartState()
     startStepCost = 0
 
-    # 将起始状态压入队列,路径为空
-    pq.push((startPosition, []), startStepCost)  # (位置, 路径, 代价)
-    visited[startPosition] = 0;
-    #print(pq.pop())  # 查看返回值的结构  ('A', [])
 
-    # 开始搜索
+    pq.push((startPosition, []), startStepCost)  
+    visited[startPosition] = 0;
+
     while not pq.isEmpty():
 
         currentNode = pq.pop()
@@ -197,52 +204,34 @@ def nullHeuristic(state, problem=None) -> float:
     """
     return 0
 
-
-# f = g + h, g:从起点到当前节点的实际路径代价, h:从当前节点到目标节点的曼哈顿距离
-# 按照bfs的基本结构的话， 问题就是已经访问的节点无法再次访问， 有最优解但导致路径中断
 def aStarSearch(problem: SearchProblem, heuristic=nullHeuristic) -> List[Directions]:
     """Search the node that has the lowest combined cost and heuristic first."""
     "*** YOUR CODE HERE ***"
 
     from util import PriorityQueue
 
-    #create an priorityQueue to store the state and path
     pq = PriorityQueue()
-    # 存储已经访问过的状态，字典存储，键值对：节点和节点的最短路径
-    visited = {}
-    # priority = 0 # 这个不知道为啥影响那么大
 
-    # 定义起始状态
+    visited = {}
     startPosition = problem.getStartState()
     startPriority = heuristic(startPosition, problem)
 
-    # 将起始状态压入队列,路径为空
-    pq.push((startPosition, []), startPriority)  # (位置, 路径, 优先级)
+    pq.push((startPosition, []), startPriority) 
     visited[startPosition] = 0;
-    #print(pq.pop())  # 查看返回值的结构  ('A', [])
 
-    # 开始搜索
     while not pq.isEmpty():
 
         currentNode = pq.pop()
         position = currentNode[0]
         path = currentNode[1]
-        # priority, (position, path) = pq.pop()
 
-        #如果当前状态是目标状态， 返回路径， 说明已经到达终点
         if problem.isGoalState(position):
             return path;
-        #如果该状态没有访问过，标记之后，进行扩展
-        # if position not in visited:
-        #     visited.add(position)   #标记该状态为已访问
 
-        # 获取当前节点的所有后继节点
         successors = problem.getSuccessors(position)
 
-        # 要计算后继节点的cost，那么位置就得更新后再计算，得到cost即priority之后，入列
         for successor, action, stepCost in successors:
                  
-            # move first
             newPath = path + [action]
             newPosition = successor
 
@@ -251,9 +240,8 @@ def aStarSearch(problem: SearchProblem, heuristic=nullHeuristic) -> List[Directi
             f = g + h
 
             if successor not in visited or g< visited[successor]:
-                visited[successor] = g     # 更新访问记录中的最小代价
+                visited[successor] = g     
                 pq.push((successor,newPath), f)
-
 
     util.raiseNotDefined()
 
