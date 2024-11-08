@@ -64,8 +64,6 @@ class SearchProblem:
         util.raiseNotDefined()
 
 
-
-
 def tinyMazeSearch(problem: SearchProblem) -> List[Directions]:
     """
     Returns a sequence of moves that solves tinyMaze.  For any other maze, the
@@ -117,16 +115,52 @@ def depthFirstSearch(problem: SearchProblem) -> List[Directions]:
     util.raiseNotDefined()
 
 
-def breadthFirstSearch(problem):
-    """Search the shallowest nodes in the search tree first using BFS."""
+# def breadthFirstSearch(problem):
+#     """Search the shallowest nodes in the search tree first using BFS."""
 
-    
+#     # Initialize an empty Queue and an empty list for visited nodes
+#     frontier = util.Queue()
+#     visited = set()  # Use a set for faster lookups
+
+#     # Initialize the starting position and path
+#     start_state = problem.getStartState()
+#     frontier.push((start_state, [], 0))  # (state, path, cost)
+
+#     def add_to_frontier(state, path, cost):
+#         """Helper function to add a state to the frontier if not visited."""
+#         if state not in visited:
+#             frontier.push((state, path, cost))
+
+#     while not frontier.isEmpty():
+#         # Pop the front element from the queue
+#         current_state, path, action_cost = frontier.pop()
+
+#         # Check if we've reached the goal
+#         if problem.isGoalState(current_state):
+#             return path
+
+#         # If the state hasn't been visited, process it
+#         if current_state not in visited:
+#             visited.add(current_state)  # Mark the state as visited
+
+#             # Explore successors
+#             for successor, action, step_cost in problem.getSuccessors(current_state):
+#                 new_path = path + [action]
+#                 add_to_frontier(successor, new_path, action_cost + step_cost)
+
+#     # Raise an error if no solution is found
+#     util.raiseNotDefined()
+
+def breadthFirstSearch(problem: SearchProblem) -> List[Directions]:
+    """Search the shallowest nodes in the search tree first."""
     # Initialize an empty Queue and an empty list for visited nodes
     frontier = util.Queue()
-    visited = set()  # Use a set for faster lookups
+    visited = []
 
     # Initialize the starting position and path
     start_state = problem.getStartState()
+    if problem.isGoalState(start_state):
+        return []
     frontier.push((start_state, [], 0))  # (state, path, cost)
 
     def add_to_frontier(state, path, cost):
@@ -144,7 +178,7 @@ def breadthFirstSearch(problem):
 
         # If the state hasn't been visited, process it
         if current_state not in visited:
-            visited.add(current_state)  # Mark the state as visited
+            visited.append(current_state)  # Mark the state as visited
 
             # Explore successors
             for successor, action, step_cost in problem.getSuccessors(current_state):
