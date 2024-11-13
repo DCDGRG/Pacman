@@ -297,9 +297,10 @@ class CornersProblem(search.SearchProblem):
         """
         "*** YOUR CODE HERE ***"
 
-        return (self.startingPosition, [])  # [] empty list used to store visited corners
+        return (self.startingPosition, ())  # change list[] to tuple()
         # util.raiseNotDefined()
 
+    # state(node, visitedCorners),当前位置和已经访问过的角落
     def isGoalState(self, state: Any):
         """
         Returns whether this search state is a goal state of the problem.
@@ -331,7 +332,7 @@ class CornersProblem(search.SearchProblem):
 
         successors = []
         x, y = state[0]
-        visitedCorners = state[1]
+        visitedCorners = state[1]  #如果改了的话，这里已经是tuple了
         for action in [Directions.NORTH, Directions.SOUTH, Directions.EAST, Directions.WEST]:
             # Add a successor state to the successor list if the action is legal
             # Here's a code snippet for figuring out whether a new position hits a wall:
@@ -345,11 +346,22 @@ class CornersProblem(search.SearchProblem):
             nextx, nexty = int(x + dx), int(y + dy)
             hitsWall = self.walls[nextx][nexty]
             if not hitsWall:
-                successorVisitedCorners = list(visitedCorners)
+                # successorVisitedCorners = list(visitedCorners)  # copy of visited corners,还是个list
+                # next_node = (nextx, nexty)
+                # if next_node in self.corners:
+                #     if next_node not in successorVisitedCorners:
+                #         successorVisitedCorners.append(next_node)
+                # successor = ((next_node, successorVisitedCorners), action, 1) #successor是一个元组
+                # successors.append(successor)
+
                 next_node = (nextx, nexty)
-                if next_node in self.corners:
-                    if next_node not in successorVisitedCorners:
-                        successorVisitedCorners.append(next_node)
+                # 创建一个不可变的 successorVisitedCorners
+                if next_node in self.corners and next_node not in visitedCorners:
+                    successorVisitedCorners = tuple(sorted(visitedCorners + (next_node,)))
+                else:
+                    successorVisitedCorners = visitedCorners
+
+                # 创建成功的状态 (位置, 已访问的角落), 动作, 步长成本
                 successor = ((next_node, successorVisitedCorners), action, 1)
                 successors.append(successor)
 
@@ -371,8 +383,7 @@ class CornersProblem(search.SearchProblem):
         return len(actions)
 
 
-
-def cornersHeuristic(state: Any, problem: CornersProblem):
+def cornersHeuristic(state, problem):
     """
     A heuristic for the CornersProblem that you defined.
 
@@ -383,14 +394,39 @@ def cornersHeuristic(state: Any, problem: CornersProblem):
 
     This function should always return a number that is a lower bound on the
     shortest path from the state to a goal of the problem; i.e.  it should be
-    admissible.
+    admissible (as well as consistent).
     """
     corners = problem.corners # These are the corner coordinates
     walls = problem.walls # These are the walls of the maze, as a Grid (game.py)
 
     "*** YOUR CODE HERE ***"
-    return 0 # Default to trivial solution
 
+    visitedCorners = state[1]
+    cornersLeft = [];
+    for corner in corners:
+        if corner not in visitedCorners:
+            cornersLeft.append(corner)
+    # cornerLeft现在是一个list，里面存放的是还没有访问过的角落的坐标(x, y）这样
+    # 如果cornersLeft为空，说明所有的角落都已经访问过了，直接返回0
+    if not cornersLeft:
+        return 0
+    # 如果还有角落没有访问过，那么我们就要计算当前位置到所有角落的最短距离，先试试greedy
+    # greedy is to find the nearest corner from the current position, and so on
+    originCoord = state[0]
+    totalCost = 0
+
+    while cornersLeft:
+        # distances结构：[(distance, corner), ...]
+        distances = [(util.manhattanDistance(originCoord, corner), corner) for corner in cornersLeft]
+        # 找到距离最近的角落
+        heuristic_cost, corner = min(distances)
+
+        cornersLeft.remove(corner)
+        originCoord = corner
+        totalCost += heuristic_cost
+
+    # totalCost是从当前位置到所有角落的最短距离之和
+    return totalCost
 
 
 class AStarCornersAgent(SearchAgent):
@@ -567,3 +603,18 @@ def mazeDistance(point1: Tuple[int, int], point2: Tuple[int, int], gameState: pa
     assert not walls[x2][y2], 'point2 is a wall: ' + str(point2)
     prob = PositionSearchProblem(gameState, start=point1, goal=point2, warn=False, visualize=False)
     return len(search.bfs(prob))
+
+
+# searchAgents.py
+# ---------------
+# Licensing Information:  You are free to use or extend these projects for
+# educational purposes provided that (1) you do not distribute or publish
+# solutions, (2) you retain this notice, and (3) you provide clear
+# attribution to UC Berkeley, including a link to http://ai.berkeley.edu.
+
+# Attribution Information: The Pacman AI projects were developed at UC Berkeley.
+# The core projects and autograders were primarily created by John DeNero
+# (denero@cs.berkeley.edu) and Dan Klein (klein@cs.berkeley.edu).
+# Student side autograding was added by Brad Miller, Nick Hay, and
+# Pieter Abbeel (pabbeel@cs.berkeley.edu).
+

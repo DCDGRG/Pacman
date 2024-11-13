@@ -190,7 +190,6 @@ def breadthFirstSearch(problem: SearchProblem) -> List[Directions]:
 
 
 
-
 def uniformCostSearch(problem: SearchProblem) -> List[Directions]:
     """Search the node of least total cost first."""
     "*** YOUR CODE HERE ***"
@@ -227,7 +226,6 @@ def uniformCostSearch(problem: SearchProblem) -> List[Directions]:
                 visited[successor] = g
                 pq.push((successor, newPath), g)
 
-
     util.raiseNotDefined()
 
 
@@ -238,44 +236,100 @@ def nullHeuristic(state, problem=None) -> float:
     """
     return 0
 
+# searchPoint version
+# def aStarSearch(problem: SearchProblem, heuristic=nullHeuristic) -> List[Directions]:
+#     """Search the node that has the lowest combined cost and heuristic first."""
+#     "*** YOUR CODE HERE ***"
+
+#     from util import PriorityQueue
+#     pq = PriorityQueue()
+
+#     visited = {}    # Dictionary to store visited nodes
+#     startPosition = problem.getStartState()
+#     startPriority = heuristic(startPosition, problem)
+
+#     pq.push((startPosition, []), startPriority) 
+#     visited[startPosition] = 0;
+
+#     while not pq.isEmpty():
+
+#         currentNode = pq.pop()
+#         position = currentNode[0]
+#         path = currentNode[1]
+
+#         if problem.isGoalState(position):
+#             return path;
+
+#         successors = problem.getSuccessors(position)
+
+#         for successor, action, stepCost in successors:
+                 
+#             newPath = path + [action]
+#             newPosition = successor
+
+#             h = heuristic(newPosition, problem)
+#             g = problem.getCostOfActions(newPath)
+#             f = g + h
+
+#             if successor not in visited or g< visited[successor]:
+#                 visited[successor] = g     
+#                 pq.push((successor,newPath), f)
+
+#     util.raiseNotDefined()
+
+
+# cornerHeuristic version
 def aStarSearch(problem: SearchProblem, heuristic=nullHeuristic) -> List[Directions]:
     """Search the node that has the lowest combined cost and heuristic first."""
     "*** YOUR CODE HERE ***"
 
     from util import PriorityQueue
-
     pq = PriorityQueue()
 
-    visited = {}
-    startPosition = problem.getStartState()
-    startPriority = heuristic(startPosition, problem)
+    # visited 要存储的是当前节点的state, 以及从start到该节点的cost
+    visited = {}  # Dictionary to store visited nodes，key: 节点的state, value: 从start到该节点的cost
 
-    pq.push((startPosition, []), startPriority) 
-    visited[startPosition] = 0;
+    # cornerProblem中的getStartState()返回的是 ((x, y), []), current position and visitedCorners
+    startState = problem.getStartState()
+    # 返回cornerHeuristic的totalCost, 也就是从当前位置到所有未访问的角落的最短距离之和
+    startHeuristicCost = heuristic(startState, problem)
+
+    pq.push((startState, []), startHeuristicCost) 
+    #更新起点开始的路径代价，最初的代价是0
+    visited[startState] = 0; 
+    # 报错的原因是searchAgent中定义的getStartState()返回的是((x, y), []), 而[]是不可哈希的，所以不能作为key里的元素
 
     while not pq.isEmpty():
 
         currentNode = pq.pop()
-        position = currentNode[0]
-        path = currentNode[1]
+        currentState, path = currentNode[0], currentNode[1]   #得到当前节点的state((x, y),visitedCorners)和path:[]
+        # test and print currentState and path，按理来说打印的state包括currentPosition和visitedCorners,
+        print(currentState, path)
 
-        if problem.isGoalState(position):
+        # position = currentNode[0]
+        # path = currentNode[1]
+
+        if problem.isGoalState(currentState): 
             return path;
 
-        successors = problem.getSuccessors(position)
+        successors = problem.getSuccessors(currentState)
 
         for successor, action, stepCost in successors:
+            
+            # 将state中的list非哈希结构分开
+            successorPosition, successorVisitedCorners = successor
+            newState = (successorPosition, successorVisitedCorners)
                  
             newPath = path + [action]
-            newPosition = successor
+            newState = successor
 
-            h = heuristic(newPosition, problem)
+            h = heuristic(newState, problem)
             g = problem.getCostOfActions(newPath)
             f = g + h
 
-            if successor not in visited or g< visited[successor]:
-                visited[successor] = g     
-                pq.push((successor,newPath), f)
+            if newState not in visited or g< visited[newState]:
+                visited[newState] = g     
+                pq.push((newState,newPath), f)
 
     util.raiseNotDefined()
 
