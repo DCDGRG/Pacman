@@ -115,42 +115,6 @@ def depthFirstSearch(problem: SearchProblem) -> List[Directions]:
     util.raiseNotDefined()
 
 
-# def breadthFirstSearch(problem):
-#     """Search the shallowest nodes in the search tree first using BFS."""
-
-#     # Initialize an empty Queue and an empty list for visited nodes
-#     frontier = util.Queue()
-#     visited = set()  # Use a set for faster lookups
-
-#     # Initialize the starting position and path
-#     start_state = problem.getStartState()
-#     frontier.push((start_state, [], 0))  # (state, path, cost)
-
-#     def add_to_frontier(state, path, cost):
-#         """Helper function to add a state to the frontier if not visited."""
-#         if state not in visited:
-#             frontier.push((state, path, cost))
-
-#     while not frontier.isEmpty():
-#         # Pop the front element from the queue
-#         current_state, path, action_cost = frontier.pop()
-
-#         # Check if we've reached the goal
-#         if problem.isGoalState(current_state):
-#             return path
-
-#         # If the state hasn't been visited, process it
-#         if current_state not in visited:
-#             visited.add(current_state)  # Mark the state as visited
-
-#             # Explore successors
-#             for successor, action, step_cost in problem.getSuccessors(current_state):
-#                 new_path = path + [action]
-#                 add_to_frontier(successor, new_path, action_cost + step_cost)
-
-#     # Raise an error if no solution is found
-#     util.raiseNotDefined()
-
 def breadthFirstSearch(problem: SearchProblem) -> List[Directions]:
     """Search the shallowest nodes in the search tree first."""
     # Initialize an empty Queue and an empty list for visited nodes
@@ -237,45 +201,45 @@ def nullHeuristic(state, problem=None) -> float:
     return 0
 
 # searchPoint version
-# def aStarSearch(problem: SearchProblem, heuristic=nullHeuristic) -> List[Directions]:
-#     """Search the node that has the lowest combined cost and heuristic first."""
-#     "*** YOUR CODE HERE ***"
+def aStarSearch(problem: SearchProblem, heuristic=nullHeuristic) -> List[Directions]:
+    """Search the node that has the lowest combined cost and heuristic first."""
+    "*** YOUR CODE HERE ***"
 
-#     from util import PriorityQueue
-#     pq = PriorityQueue()
+    from util import PriorityQueue
+    pq = PriorityQueue()
 
-#     visited = {}    # Dictionary to store visited nodes
-#     startPosition = problem.getStartState()
-#     startPriority = heuristic(startPosition, problem)
+    visited = {}    # Dictionary to store visited nodes
+    startPosition = problem.getStartState()
+    startPriority = heuristic(startPosition, problem)
 
-#     pq.push((startPosition, []), startPriority) 
-#     visited[startPosition] = 0;
+    pq.push((startPosition, []), startPriority) 
+    visited[startPosition] = 0;
 
-#     while not pq.isEmpty():
+    while not pq.isEmpty():
 
-#         currentNode = pq.pop()
-#         position = currentNode[0]
-#         path = currentNode[1]
+        currentNode = pq.pop()
+        position = currentNode[0]
+        path = currentNode[1]
 
-#         if problem.isGoalState(position):
-#             return path;
+        if problem.isGoalState(position):
+            return path;
 
-#         successors = problem.getSuccessors(position)
+        successors = problem.getSuccessors(position)
 
-#         for successor, action, stepCost in successors:
+        for successor, action, stepCost in successors:
                  
-#             newPath = path + [action]
-#             newPosition = successor
+            newPath = path + [action]
+            newPosition = successor
 
-#             h = heuristic(newPosition, problem)
-#             g = problem.getCostOfActions(newPath)
-#             f = g + h
+            h = heuristic(newPosition, problem)
+            g = problem.getCostOfActions(newPath)
+            f = g + h
 
-#             if successor not in visited or g< visited[successor]:
-#                 visited[successor] = g     
-#                 pq.push((successor,newPath), f)
+            if successor not in visited or g< visited[successor]:
+                visited[successor] = g     
+                pq.push((successor,newPath), f)
 
-#     util.raiseNotDefined()
+    util.raiseNotDefined()
 
 
 # cornerHeuristic version
@@ -330,6 +294,51 @@ def aStarSearch(problem: SearchProblem, heuristic=nullHeuristic) -> List[Directi
             if newState not in visited or g< visited[newState]:
                 visited[newState] = g     
                 pq.push((newState,newPath), f)
+
+    util.raiseNotDefined()
+
+
+# foodSearch version
+def aStarSearch(problem: SearchProblem, heuristic=nullHeuristic) -> List[Directions]:
+    """Search the node that has the lowest combined cost and heuristic first."""
+    "*** YOUR CODE HERE ***"
+
+    from util import PriorityQueue
+    pq = PriorityQueue()
+
+    visited = {}    # Dictionary to store visited nodes
+    startState = problem.getStartState()   #State: ((x, y), foodGrid), foodGrid is a 2D list
+   
+    # 用foodHeuristic来寻找最远的食物的mazeDistance
+    startPriority = heuristic(startState, problem)
+
+    #pq中是：(state, path), priority
+    pq.push((startState, []), startPriority) 
+    visited[startState] = 0;
+
+    while not pq.isEmpty():
+
+        currentNode = pq.pop()
+        position = currentNode[0]
+        path = currentNode[1]
+
+        if problem.isGoalState(position):
+            return path;
+
+        successors = problem.getSuccessors(position)
+
+        for successor, action, stepCost in successors:
+                 
+            newPath = path + [action]
+            newPosition = successor
+
+            h = heuristic(newPosition, problem)
+            g = problem.getCostOfActions(newPath)
+            f = g + h
+
+            if successor not in visited or g< visited[successor]:
+                visited[successor] = g     
+                pq.push((successor,newPath), f)
 
     util.raiseNotDefined()
 

@@ -454,8 +454,8 @@ class FoodSearchProblem:
     def getStartState(self):
         return self.start
 
-    def isGoalState(self, state):
-        return state[1].count() == 0
+    def isGoalState(self, state):       #( pacmanPosition, foodGrid )
+        return state[1].count() == 0    #实现为统计所有元素中的 True 值
 
     def getSuccessors(self, state):
         "Returns successor states, the actions they require, and a cost of 1."
@@ -516,7 +516,21 @@ def foodHeuristic(state: Tuple[Tuple, List[List]], problem: FoodSearchProblem):
     """
     position, foodGrid = state
     "*** YOUR CODE HERE ***"
-    return 0
+
+    start_position = problem.startingGameState
+    food_list = foodGrid.asList()
+    heuristic = 0   # Initializes the heuristic to 0.
+
+    # Returns 0 if there isn't any food.
+    if len(food_list) == 0:
+        return 0
+
+    # Returns maximum distance between the current position and the farthest food.
+    for item in food_list:
+        foodDistance = mazeDistance(position, item, start_position)
+        if foodDistance > heuristic:
+            heuristic = foodDistance
+    return heuristic
 
 
 class ClosestDotSearchAgent(SearchAgent):
@@ -617,4 +631,3 @@ def mazeDistance(point1: Tuple[int, int], point2: Tuple[int, int], gameState: pa
 # (denero@cs.berkeley.edu) and Dan Klein (klein@cs.berkeley.edu).
 # Student side autograding was added by Brad Miller, Nick Hay, and
 # Pieter Abbeel (pabbeel@cs.berkeley.edu).
-
